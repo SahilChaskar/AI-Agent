@@ -1,0 +1,11 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: mastra_rag_db
+    ports:
+      - "5434:5432" #using port 5434 cause 32 and 33 are occupied by local docker
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d # this is the init command placed in this folder location is the file which will initialise the vector db creation if not exsists in the first run
