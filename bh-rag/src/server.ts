@@ -70,6 +70,43 @@ app.post("/ask", async (req, res) => {
   }
 });
 
+
+app.post("/askNew", async (req, res) => {
+  const { query } = req.body;
+  if (!query) return res.status(400).json({ error: "Missing 'query'" });
+
+  console.log("🟢 Incoming Query:", query);
+
+  try {
+    const stream = await agent.stream(
+      [{ role: "user", content: query }],
+      { toolChoice: { type: "tool", toolName: "searchDocs" } }
+    );
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    // flush headers
+    res.flushHeaders?.();
+
+    for await (const chunk of stream.textStream) {
+      if (chunk) {
+        res.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`);
+      }
+    }
+
+    // signal end of stream
+    res.write(`data: [DONE]\n\n`);
+    res.end();
+  } catch (err: any) {
+    console.error("❌ Streaming error:", err);
+    res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+    res.write(`data: [DONE]\n\n`);
+    res.end();
+  }
+});
+
 const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => {
   console.log(`✅ Server listening at http://localhost:${PORT}`);
