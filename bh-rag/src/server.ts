@@ -9,10 +9,13 @@ import dotenv from "dotenv";
 import { Mastra } from "@mastra/core";
 import { PgVector } from "@mastra/pg";
 import ragAgentVector from "./rag/agent/rag_agent_vector_final"; // <- use the new file
+import cors from "cors";
+
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use(cors());
 
 const connectionString = process.env.DATABASE_URL || "";
 const vectorStore = new PgVector({ connectionString });
@@ -26,8 +29,8 @@ const agent = mastra.getAgent("ragAgentVector");
 
 app.post("/ask", async (req, res) => {
   try {
-    const { query } = req.body;
-    if (!query) return res.status(400).json({ error: "Missing 'query'" });
+    const query = req.body.query || req.body.prompt;
+    if (!query) return res.status(400).json({ error: "Missing 'query' or 'prompt'" });
 
     console.log("🟢 [Server] Incoming Query:", query);
 
@@ -72,8 +75,8 @@ app.post("/ask", async (req, res) => {
 
 
 app.post("/askNew", async (req, res) => {
-  const { query } = req.body;
-  if (!query) return res.status(400).json({ error: "Missing 'query'" });
+  const query = req.body.query || req.body.prompt;
+  if (!query) return res.status(400).json({ error: "Missing 'query' or 'prompt'" });
 
   console.log("🟢 Incoming Query:", query);
 
@@ -83,29 +86,48 @@ app.post("/askNew", async (req, res) => {
       { toolChoice: { type: "tool", toolName: "searchDocs" } }
     );
 
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
-
-    // flush headers
-    res.flushHeaders?.();
-
+    // 👇 Copy logic from /ask: accumulate a final answer
+    let answer = "";
     for await (const chunk of stream.textStream) {
-      if (chunk) {
-        res.write(`data: ${JSON.stringify({ delta: chunk })}\n\n`);
+      if (chunk) answer += chunk;
+    }
+
+    if (!answer) {
+      for await (const ev of stream.fullStream) {
+        if (ev?.type === "tool-result" && ev?.result) {
+          const r = ev.result;
+          if (typeof r.text === "string" && r.text.trim().length > 0) {
+            answer = r.text;
+            break;
+          }
+        }
       }
     }
 
-    // signal end of stream
+    console.log("✅ [Server] Final Answer (/askNew):", answer || "[EMPTY]");
+
+    // 👇 Send once via SSE so your current frontend can still consume it
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders?.();
+
+    res.write(`data: ${JSON.stringify({ delta: answer || "No answer found." })}\n\n`);
     res.write(`data: [DONE]\n\n`);
     res.end();
   } catch (err: any) {
     console.error("❌ Streaming error:", err);
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders?.();
+
     res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
     res.write(`data: [DONE]\n\n`);
     res.end();
   }
 });
+
 
 const PORT = Number(process.env.PORT || 3000);
 app.listen(PORT, () => {

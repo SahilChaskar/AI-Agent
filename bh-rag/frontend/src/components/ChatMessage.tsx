@@ -1,45 +1,100 @@
+import React from "react";
 import type { ChatMessageType } from "../hooks/useChatStreaming";
 
-export default function ChatMessage({ message }: { message: ChatMessageType }) {
-  return (
-    <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[80%] p-3 rounded-lg ${message.role === "user" ? "bg-sky-600 text-white" : "bg-white border"}`}>
-        <div className="whitespace-pre-wrap">{message.text}</div>
-
-        {message.citations && message.citations.length > 0 && (
-          <div className="mt-2 text-xs text-slate-500 space-y-1">
-            <div className="font-medium">Citations</div>
-            {message.citations.map((c, i) => (
-              <Citation key={i} c={c} />
-            ))}
-          </div>
-        )}
-
-        {message.sourceDocuments && message.sourceDocuments.length > 0 && (
-          <div className="mt-2 text-xs text-slate-500">
-            <div className="font-medium">Source Documents</div>
-            <ul className="list-disc ml-4">
-              {message.sourceDocuments.map((s, idx) => (
-                <li key={idx}>
-                  <a className="underline" href={s.url ?? "#"} target="_blank" rel="noreferrer">
-                    {s.title ?? s.id ?? "Document"}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function Spinner() {
+    return (
+        <span className="spinner" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 50 50">
+                <circle cx="25" cy="25" r="20" fill="none" stroke="#6b7280" strokeWidth="4" strokeLinecap="round" strokeDasharray="31.4 31.4">
+                    <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="1s" from="0 25 25" to="360 25 25" />
+                </circle>
+            </svg>
+        </span>
+    );
 }
 
-function Citation({ c }: { c: any }) {
-  // expected shape: { text, from, page, id } but flexible
-  return (
-    <div>
-      <div className="text-xs">{c.text ?? c.quote ?? "—"}</div>
-      <div className="text-[11px] text-slate-400">{c.from ? `${c.from}${c.page ? `, p.${c.page}` : ""}` : c.id}</div>
-    </div>
-  );
+export default function ChatMessage({ message }: { message: ChatMessageType }) {
+    const isUser = message.role === "user";
+
+    if (isUser) {
+        return (
+            <div className="chat-message user">
+                <div className="bubble user-bubble" title={message.text}>
+                    {message.text}
+                </div>
+            </div>
+        );
+    }
+
+    const directText = message.text;
+    const supporting = message.supportingEvidence;
+    const context = message.contextualAnalysis;
+    const cites = message.citations;
+
+    return (
+        <div className="chat-message agent">
+            <div className="bubble agent-bubble">
+                {directText && (
+                    <div className="section">
+                        <div className="section-title">Direct Answer</div>
+                        <div className="section-body">
+                            {directText}
+                            {message.isPartial && (
+                                <div className="loading-indicator">
+                                    <Spinner />
+                                    <span className="loading-text">Generating...</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {Array.isArray(supporting) && supporting.length > 0 && (
+                    <div className="section">
+                        <div className="section-title">Supporting Evidence</div>
+                        <ul className="section-list">
+                            {supporting.map((ev, i) => <li key={i}>{ev}</li>)}
+                        </ul>
+                    </div>
+                )}
+
+                {Array.isArray(context) && context.length > 0 && (
+                    <div className="section">
+                        <div className="section-title">Contextual Analysis</div>
+                        <ul className="section-list">
+                            {context.map((ca, i) => <li key={i}>{ca}</li>)}
+                        </ul>
+                    </div>
+                )}
+
+                {Array.isArray(cites) && cites.length > 0 && (
+                    <div className="section">
+                        <div className="section-title">Source Documentation</div>
+                        <ul className="citation-list">
+                            {cites.map((src: any, i: number) => {
+                                if (!src) return <li key={i}>Unknown source</li>;
+                                const title = src.title || src.id || src.name || "Document";
+                                const url = src.url || src.link;
+                                const page = src.page ? ` (p. ${src.page})` : "";
+                                return (
+                                    <li key={i} className="citation-item">
+                                        {url ? (
+                                            <a className="citation-link" href={url} target="_blank" rel="noreferrer" title={src.link === '/data/letter/' ? "Exact year not found, showing all letters" : `Open ${title}`}>
+                                                {title}{page}
+                                                <span style={{ marginLeft: "6px", display: "inline-flex", alignItems: "center" }}>
+                                                    📄
+                                                </span>
+                                            </a>
+                                        ) : (
+                                            <span className="citation-text">{title}{page}</span>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 }

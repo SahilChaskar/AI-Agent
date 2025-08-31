@@ -1,15 +1,16 @@
+import React from "react";
 import ChatWindow from "./components/ChatWindow";
+import Sidebar from "./components/Sidebar";
+import useChatStreaming from "./hooks/useChatStreaming";
 
 export default function App() {
-  return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto max-w-3xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold">Berkshire RAG Chat</h1>
-          <p className="text-sm text-slate-600">Ask questions about Berkshire Hathaway letters</p>
-        </header>
+  const chat = useChatStreaming();
 
-        <main>
+  return (
+    <div className="h-screen w-screen flex bg-slate-50">
+      {/* Main chat */}
+      <div className="flex-1 flex flex-col">
+        <main className="flex-1">
           <ChatWindow />
         </main>
       </div>

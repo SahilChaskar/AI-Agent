@@ -24,6 +24,7 @@
     "@mastra/memory": "^0.14.2",
     "@mastra/pg": "^0.14.5",
     "@mastra/rag": "^1.2.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "openai": "^5.16.0",
     "pdf-parse": "^1.1.1",
