@@ -252,8 +252,8 @@ export type Conversation = {
     messages: ChatMessageType[];
 };
 
-const STORAGE_KEY = "bh-rag-conversations";
-const ACTIVE_KEY = "bh-rag-active-id";
+const STORAGE_KEY = "app-conversations";
+const ACTIVE_KEY = "app-active-id";
 const CHAT_ENDPOINT = "http://localhost:3000/askNew";
 const MEMORY_WINDOW = 6;
 
