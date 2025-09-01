@@ -43,9 +43,13 @@ Before you begin, ensure you have:
 ### 1. Clone and Install
 
 ```bash
-git clone <your-repository-url>
-cd berkshire-hathaway-rag
+git clone https://github.com/SahilChaskar/AI-Agent.git
+docker-compose up
+cd app
 npm install
+cd frontend
+npm install
+npm run dev
 ```
 
 ### 2. Environment Configuration
@@ -117,14 +121,57 @@ Access the Mastra playground at: http://localhost:4111
 ## Project Structure
 
 ```
-src/
-├── mastra/
-│   ├── agent/          # Agent configuration and logic
-│   ├── embeddings/     # Embedding generation scripts
-│   ├── workflows/      # RAG pipelines and ETL processes
-│   ├── pdf/           # Source PDF documents
-│   └── tools/         # Vector search and retrieval functions
-├── ...
+app/
+├── frontend/                 # React frontend
+│   └── src/
+│       ├── components/       # UI components
+│       └── hooks/            # Custom React hooks
+│
+├── data/
+│   └── letters/              # Berkshire letters (PDFs)
+│       ├── 1977.pdf
+│       ├── 1978.pdf
+│       ├── 1979.pdf
+│       └── ...
+│
+├── src/
+│   ├── config/
+│   │   └── db.ts             # Database connection
+│   │
+│   ├── ingestion/            # PDF → chunks → embeddings → Postgres
+│   │   ├── chunk.ts
+│   │   ├── embed-openai.ts
+│   │   ├── ingest.ts
+│   │   ├── ingestion-pgvector.ts
+│   │   ├── MDocument.ts
+│   │   ├── parse-pdf.ts
+│   │   ├── upsert-pg.ts
+│   │   └── upsert-pgvector.ts
+│   │
+│   ├── mastra/               # Mastra framework logic
+│   │   ├── prompts/
+│   │   ├── agent/
+│   │   │   └── rag\_agent\_vector\_final.ts
+│   │   └── index.ts
+│   │
+│   ├── utils/
+│   │   └── logger.ts
+│   │
+│   └── server.ts             # Express/Mastra server
+│
+├── .env
+├── .gitignore
+├── package.json
+├── package-lock.json
+├── tsconfig.json
+│
+├── node\_modules/
+│
+├── init-db/
+│   └── 001-vector.sql        # pgvector init script
+│
+└── docker-compose.yaml       # Local dev services
+
 ```
 
 ## Testing
