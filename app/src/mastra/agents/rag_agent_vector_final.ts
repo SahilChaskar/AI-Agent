@@ -98,7 +98,7 @@ const searchDocs = createTool({
     }),
     execute: async ({ context }) => {
         const query = (context as any).input as string;
-        console.log("🔍 [Tool] searchDocs — query:", query);
+        console.log("[Tool] searchDocs — query:", query);
 
         // 1) embed query
         const { embedding } = await embed({
