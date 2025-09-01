@@ -192,7 +192,7 @@ For optimal performance, configure your PostgreSQL instance:
 
 ```sql
 -- Increase maintenance_work_mem for index creation
-SET maintenance_work_mem = '64MB';
+SET maintenance_work_mem = '128MB';
 ```
 
 ### API Requirements
