@@ -2,6 +2,17 @@
 
 A Retrieval-Augmented Generation (RAG) system built with the Mastra framework to answer questions about Warren Buffett's investment philosophy and Berkshire Hathaway's business strategy based on official shareholder letters.
 
+## Screenshots
+
+### Mastra Agent Playground & Citation View
+![Agent Playground](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/agentPlayGround.png)
+![Document Citation Response](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/docCitationRes.png)
+
+### Additional Features
+![Chat Interface](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/chat.png)
+![Conversation Memory](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/memory.png)
+![Source Document Citation](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/sourceDocCitation.png)
+
 ## Features
 
 - Natural language queries about Berkshire Hathaway and Warren Buffett
