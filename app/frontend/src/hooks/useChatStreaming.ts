@@ -424,8 +424,42 @@ export default function useChatStreaming() {
                             const parsed = JSON.parse(data);
 
                             if (typeof parsed.delta === "string") {
-                                updateMessage(convId, agentId, (prev) => ({ text: (prev.text || "") + parsed.delta }));
+                                updateMessage(convId, agentId, (prev) => {
+                                    const newText = (prev.text || "") + parsed.delta;
+
+                                    // Debug log for raw delta
+                                    console.log("[DEBUG] Incoming delta chunk:", parsed.delta);
+
+                                    // Check if this chunk includes Source Documentation and possibly a year
+                                    let yearMatch = newText.match(/\b(19|20)\d{2}\b/);
+                                    const year = yearMatch ? yearMatch[0] : null;
+
+                                    // If no year in text, fallback to prompt
+                                    if (!year) {
+                                        const fallbackMatch = prompt.match(/\b(19|20)\d{2}\b/);
+                                        if (fallbackMatch) {
+                                            console.log("[DEBUG] No year in delta text, using fallback from prompt:", fallbackMatch[0]);
+                                        }
+                                    } else {
+                                        console.log("[DEBUG] Year extracted from delta text:", year);
+                                    }
+
+                                    // If year exists and not already in citations, add it
+                                    const existingLinks = prev.citations?.map(c => c.link) || [];
+                                    if (year && !existingLinks.includes(`/data/letters/${year}.pdf`)) {
+                                        const link = `/data/letters/${year}.pdf`;
+                                        console.log("[DEBUG] Adding citation link:", link);
+                                        return {
+                                            ...prev,
+                                            text: newText,
+                                            citations: [...(prev.citations || []), { title: `Shareholder Letter ${year}`, link }]
+                                        };
+                                    }
+
+                                    return { text: newText };
+                                });
                             }
+
                             if (typeof parsed.directAnswer === "string") {
                                 updateMessage(convId, agentId, (prev) => ({ text: (prev.text || "") + parsed.directAnswer }));
                             }
@@ -475,7 +509,7 @@ export default function useChatStreaming() {
                                         console.log(`[DEBUG] Doc ${index}: No year in doc, fallback from prompt ->`, year);
                                     }
 
-                                    const link = year ? `/data/letter/${year}.pdf` : '/data/letter/';
+                                    const link = year ? `/data/letters/${year}.pdf` : '/data/letters/';
                                     console.log(`[DEBUG] Final link for Doc ${index}:`, link);
 
                                     if (typeof doc === "string") {
