@@ -23,6 +23,12 @@ const vectorStore = new PgVector({ connectionString });
 const mastra = new Mastra({
   agents: { ragAgentVector },
   vectors: { vectorStore },
+  telemetry: {
+    serviceName: "berkshire-rag-app",
+    enabled: true,
+    export: {
+      type: "console",
+    }},
 });
 
 const agent = mastra.getAgent("ragAgentVector");
