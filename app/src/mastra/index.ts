@@ -2,10 +2,8 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
-import { weatherWorkflow } from './workflows/weather-workflow';
-import { weatherAgent } from './agents/weather-agent';
 import { PgVector } from "@mastra/pg";
-import ragAgent from "./agents/rag_agent_vector_final"; // after refactor to use createVectorQueryTool
+import ragAgent from "./agents/rag_agent_vector_final.js"; // after refactor to use createVectorQueryTool
 import dotenv from "dotenv";
 
 dotenv.config();

@@ -8,7 +8,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { Mastra } from "@mastra/core";
 import { PgVector } from "@mastra/pg";
-import ragAgentVector from "./rag/agent/rag_agent_vector_final"; // <- use the new file
+import ragAgentVector from "./rag/agent/rag_agent_vector_final.js"; // <- use the new file
 import cors from "cors";
 
 dotenv.config();

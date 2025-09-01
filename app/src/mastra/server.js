@@ -2,7 +2,7 @@ const express = require("express");
 const path = require("path");
 
 const app = express();
-const PORT = 4112; // Different from Mastra's 4111
+const PORT = 4112;
 
 const lettersPath = path.join(process.cwd(), "data", "letters");
 
@@ -13,5 +13,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`📂 File server running at http://localhost:${PORT}/letters`);
+  console.log(`File server running at http://localhost:${PORT}/letters`);
 });
