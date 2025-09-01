@@ -8,7 +8,7 @@ A Retrieval-Augmented Generation (RAG) system built with the Mastra framework to
 ![Agent Playground](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/agentPlayGround.png)
 ![Document Citation Response](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/docCitationRes.png)
 
-### Additional Features
+### Additional Frontend Integration React
 ![Chat Interface](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/chat.png)
 ![Conversation Memory](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/memory.png)
 ![Source Document Citation](https://raw.githubusercontent.com/SahilChaskar/AI-Agent/main/Screenshots/sourceDocCitation.png)
