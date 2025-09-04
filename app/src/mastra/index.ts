@@ -3,7 +3,7 @@ import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { LibSQLStore } from '@mastra/libsql';
 import { PgVector } from "@mastra/pg";
-import ragAgent from "./agents/rag_agent_vector_final.js"; // after refactor to use createVectorQueryTool
+import ragAgent from "./agents/rag_agent_vector_final.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -23,7 +23,7 @@ const pgVectorStore = new PgVector({ connectionString });
 
 export const mastra = new Mastra({
   agents: { ragAgent },
-  vectors: { pgVector: pgVectorStore }, // ✅ match the name here
+  vectors: { pgVector: pgVectorStore }, 
 });
 
 export const agent = mastra.getAgent("ragAgent");

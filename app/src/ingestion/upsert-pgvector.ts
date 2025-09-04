@@ -18,7 +18,7 @@ async function ensureIndex(dimension: number) {
       metric: "cosine",
     });
     indexInitialized = true;
-    console.log(`✅ Index '${INDEX_NAME}' ready`);
+    console.log(` Index '${INDEX_NAME}' ready`);
   }
 }
 

@@ -1,3 +1,4 @@
+//when served through server.ts
 import fetch from "node-fetch";
 
 const BASE_URL = "http://localhost:3000";
