@@ -18,7 +18,7 @@ export default function ChatWindow() {
   const [input, setInput] = useState("");
   const [showMemory, setShowMemory] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
-  const [lastAnimatedId, setLastAnimatedId] = useState<string | null>(null); //  Tracks which message animates now
+  const [lastAnimatedId, setLastAnimatedId] = useState<string | null>(null); // ✅ Tracks which message animates now
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Auto-scroll on new messages
@@ -32,7 +32,7 @@ export default function ChatWindow() {
     setInput("");
   };
 
-  //  When a new agent message starts (isPartial true), mark it for animation
+  // ✅ When a new agent message starts (isPartial true), mark it for animation
   useEffect(() => {
     const lastMsg = messages[messages.length - 1];
     if (lastMsg && lastMsg.role === "agent" && lastMsg.isPartial) {
@@ -40,7 +40,7 @@ export default function ChatWindow() {
         setLastAnimatedId(lastMsg.id); // Start animating new message
       }
     }
-    //  When the current animated message finishes streaming, stop animating
+    // ✅ When the current animated message finishes streaming, stop animating
     if (lastMsg && lastMsg.id === lastAnimatedId && !lastMsg.isPartial) {
       setTimeout(() => setLastAnimatedId(null), 500); // Small delay for smooth finish
     }
@@ -95,7 +95,7 @@ export default function ChatWindow() {
               key={m.id}
               message={m}
               onCitationClick={setSelectedPdf}
-              isLast={m.id === lastAnimatedId} //  Only animate the currently streaming message
+              isLast={m.id === lastAnimatedId} // ✅ Only animate the currently streaming message
             />
           ))}
           <div ref={messagesEndRef} />

@@ -38,6 +38,13 @@ const connectionString =
 
 const indexName = "shareholder_letters_1977_2024";
 
+const RefineSchema = z.object({
+    direct_answer: z.string(),
+    supporting_evidence: z.array(z.string()),
+    contextual_analysis: z.string(),
+    sources: z.array(z.string()),
+});
+
 interface RagAnswer {
     direct_answer: string;
     supporting_evidence: string[];

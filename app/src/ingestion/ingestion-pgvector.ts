@@ -19,13 +19,13 @@ async function processPDF(filePath: string, fileName: string) {
     const data = await pdf(dataBuffer);
     const text = data.text;
 
-    //  Table-aware chunking
+    // ✅ Table-aware chunking
     const rawChunks = smartChunk(text);
     const expandedChunks: { content: string; type: "text" | "table"; year: number | null }[] = [];
 
     const year = extractYear(fileName);
 
-    //  Expand text chunks with overlap, keep tables as-is
+    // ✅ Expand text chunks with overlap, keep tables as-is
     for (const chunk of rawChunks) {
       if (chunk.type === "text") {
         const subChunks = recursiveTextChunk(chunk.content, CHUNK_SIZE, CHUNK_OVERLAP);
@@ -39,21 +39,21 @@ async function processPDF(filePath: string, fileName: string) {
 
     console.log(`Generated ${expandedChunks.length} final chunks`);
 
-    //  Embed chunks
+    // ✅ Embed chunks
     const embeddings: number[][] = [];
     for (const chunk of expandedChunks) {
       const embedding = await embedText(chunk.content);
       embeddings.push(embedding);
     }
 
-    //  Upsert into pgvector
+    // ✅ Upsert into pgvector
     await upsertChunks({
       fileName,
       chunks: expandedChunks,
       embeddings,
     });
 
-    console.log(` Finished upserting all chunks for ${fileName}`);
+    console.log(`✅ Finished upserting all chunks for ${fileName}`);
   } catch (err) {
     console.error(`Failed to process ${fileName}:`, err);
   }
@@ -74,7 +74,7 @@ function extractYear(fileName: string): number | null {
 async function main() {
   console.log("Starting ingestion...");
   await parseAllPDFsInFolder(LETTERS_DIR);
-  console.log(" Ingestion complete");
+  console.log("✅ Ingestion complete");
 }
 
 main();
