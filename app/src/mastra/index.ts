@@ -23,7 +23,7 @@ const pgVectorStore = new PgVector({ connectionString });
 
 export const mastra = new Mastra({
   agents: { ragAgent },
-  vectors: { pgVector: pgVectorStore }, // ✅ match the name here
+  vectors: { pgVector: pgVectorStore },
 });
 
 export const agent = mastra.getAgent("ragAgent");

@@ -1,6 +1,6 @@
 import React from "react";
 import type { ChatMessageType } from "../hooks/useChatStreaming";
-import useTypewriter from "../hooks/useTypeWriter";
+import useTypewriter from "../hooks/useTypewriter";
 
 type Props = {
   message: ChatMessageType;

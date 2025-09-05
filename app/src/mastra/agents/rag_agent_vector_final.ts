@@ -21,8 +21,8 @@ import {
     ContentSimilarityMetric,
     ToneConsistencyMetric,
 } from "@mastra/evals/nlp";
-import { TemporalRelevanceMetric } from "../evals/TemporalRelevance.js";
-import { CitationPresenceMetric } from "../evals/CitationPresent.js";
+import { TemporalRelevanceMetric } from "../evals/TemporalRelevance";
+import { CitationPresenceMetric } from "../evals/CitationPresent";
 
 
 dotenv.config();
@@ -88,6 +88,125 @@ function safeJSONParse(text: string): any {
 }
 
 // Tool: searchDocs
+// const searchDocs = createTool({
+//     id: "searchDocs",
+//     description: "Search and answer questions using pgvector and reranking.",
+//     inputSchema: z.object({ input: z.string() }),
+//     outputSchema: z.object({
+//         text: z.string(),
+//         citations: z.array(z.object({ fileName: z.string(), chunkIndex: z.number().optional() })),
+//     }),
+//     execute: async ({ context }) => {
+//         const query = (context as any).input as string;
+//         console.log("[Tool] searchDocs — query:", query);
+
+//         // 1) embed query
+//         const { embedding } = await embed({
+//             model: openai.embedding("text-embedding-3-small"),
+//             value: query,
+//         });
+
+//         // 2) query pgvector
+//         const results = await vectorStore.query({
+//             indexName,
+//             queryVector: embedding,
+//             topK: 10,
+//             includeVector: false,
+//         });
+//         if (!results.length) return { text: "No relevant content found.", citations: [] };
+
+//         // 3) rerank
+//         const reranked = await rerank(results, query, openai("gpt-4o-mini"), { topK: 5 });
+
+//         const contextText = reranked.map((r) => r.result?.metadata?.text ?? "").join("\n---\n");
+//         const citations = reranked.map((r) => ({
+//             fileName: r.result?.metadata?.fileName || "unknown",
+//             chunkIndex: r.result?.metadata?.chunkIndex,
+//         }));
+
+//         const citationsList = citations
+//             .map((c) => {
+//                 const link = `http://localhost:4112/letters/${c.fileName}`;
+//                 return `<a href="${link}" target="_blank">${c.fileName}</a>`;
+//             })
+//             .join("<br>");
+
+
+//         // 4) freeform synthesis
+//         const systemPrompt = instructions;
+//         const userPrompt = `Given the following shareholder letter excerpts, answer clearly and concisely:\n\n${contextText}\n\nQuestion: ${query}`;
+
+//         const answerResult = await openai("gpt-4o").doGenerate({
+//             inputFormat: "messages",
+//             mode: { type: "regular" },
+//             prompt: [
+//                 { role: "system", content: systemPrompt },
+//                 { role: "user", content: [{ type: "text" as const, text: userPrompt }] },
+//             ],
+//         });
+//         const raw = (answerResult as any).text ?? "";
+//         console.log("Raw synthesis (truncated):", raw.slice(0, 500));
+
+//         // 5) refinement
+//         const refinePrompt = `
+// Return ONLY valid JSON with this schema:
+
+// {
+//   "direct_answer": string,
+//   "supporting_evidence": string[],
+//   "contextual_analysis": string,
+//   "sources": string[]
+// }
+
+// Text:
+// ${raw}`;
+
+//         const refineResult = await openai("gpt-4o").doGenerate({
+//             inputFormat: "messages",
+//             mode: { type: "regular" },
+//             prompt: [
+//                 { role: "system", content: refinePrompt },
+//                 { role: "user", content: [{ type: "text" as const, text: raw }] },
+//             ],
+//         });
+
+//         const parsed = safeJSONParse((refineResult as any).text) as RagAnswer | null;
+
+//         // 6) build final answer
+//         let composed: string;
+//         if (parsed && parsed.direct_answer) {
+//             composed = [
+//                 `Direct Answer: ${parsed.direct_answer}`,
+//                 parsed.supporting_evidence?.length
+//                     ? `\nSupporting Evidence:\n- ${parsed.supporting_evidence.join("\n- ")}`
+//                     : "\nSupporting Evidence: (none)",
+//                 `\nContextual Analysis:\n${parsed.contextual_analysis || "(none)"}`,
+//                 parsed.sources?.length ? `\nSource Documentation:\n- ${parsed.sources.join("\n- ")}` : "",
+//             ].join("\n");
+//         } else {
+//             composed = raw;
+//         }
+
+//         // 7) safeguard trim
+//         const start = composed.indexOf("Direct Answer:");
+//         const next = composed.indexOf("Direct Answer:", start + 14);
+//         const finalText =
+//             start !== -1 && next !== -1 ? composed.slice(start, next).trim() : composed.trim();
+//         console.log("Final Answer with Citations:\n", `${finalText}\n\nSources: \n${citationsList}`);
+
+//         const finalAnswer = `
+// ${finalText}
+// <br><br>
+// <strong>Sources:</strong><br>
+// ${citationsList}
+// `;
+
+//         return { text: finalAnswer, citations };
+//     },
+// });
+
+
+// Tool: searchDocs
 const searchDocs = createTool({
     id: "searchDocs",
     description: "Search and answer questions using pgvector and reranking.",
@@ -124,13 +243,12 @@ const searchDocs = createTool({
             chunkIndex: r.result?.metadata?.chunkIndex,
         }));
 
-        const citationsList = citations
-            .map((c) => {
-                const link = `http://localhost:4112/letters/${c.fileName}`;
-                return `<a href="${link}" target="_blank">${c.fileName}</a>`;
-            })
-            .join("<br>");
-
+        // const citationsList = citations
+        //     .map((c) => {
+        //         const link = `http://localhost:4112/letters/${c.fileName}`;
+        //         return `<a href="${link}" target="_blank">${c.fileName}</a>`;
+        //     })
+        //     .join("<br>");
 
         // 4) freeform synthesis
         const systemPrompt = instructions;
@@ -147,63 +265,56 @@ const searchDocs = createTool({
         const raw = (answerResult as any).text ?? "";
         console.log("Raw synthesis (truncated):", raw.slice(0, 500));
 
-        // 5) refinement
-        const refinePrompt = `
-Return ONLY valid JSON with this schema:
+        // const refinePrompt = `
+        // Return ONLY valid JSON with this schema:
+        // {
+        //   "direct_answer": string,
+        //   "supporting_evidence": string[],
+        //   "contextual_analysis": string,
+        //   "sources": string[]
+        // }
+        // Text:
+        // ${raw}`;
 
-{
-  "direct_answer": string,
-  "supporting_evidence": string[],
-  "contextual_analysis": string,
-  "sources": string[]
-}
+        // const refineResult = await openai("gpt-4o").doGenerate({
+        //     inputFormat: "messages",
+        //     mode: { type: "regular" },
+        //     prompt: [
+        //         { role: "system", content: refinePrompt },
+        //         { role: "user", content: [{ type: "text" as const, text: raw }] },
+        //     ],
+        // });
 
-Text:
-${raw}`;
+        // const parsed = safeJSONParse((refineResult as any).text) as RagAnswer | null;
 
-        const refineResult = await openai("gpt-4o").doGenerate({
-            inputFormat: "messages",
-            mode: { type: "regular" },
-            prompt: [
-                { role: "system", content: refinePrompt },
-                { role: "user", content: [{ type: "text" as const, text: raw }] },
-            ],
-        });
-
-        const parsed = safeJSONParse((refineResult as any).text) as RagAnswer | null;
-
-        // 6) build final answer
+        // 5) build final answer (using raw directly now)
         let composed: string;
-        if (parsed && parsed.direct_answer) {
-            composed = [
-                `Direct Answer: ${parsed.direct_answer}`,
-                parsed.supporting_evidence?.length
-                    ? `\nSupporting Evidence:\n- ${parsed.supporting_evidence.join("\n- ")}`
-                    : "\nSupporting Evidence: (none)",
-                `\nContextual Analysis:\n${parsed.contextual_analysis || "(none)"}`,
-                parsed.sources?.length ? `\nSource Documentation:\n- ${parsed.sources.join("\n- ")}` : "",
-            ].join("\n");
-        } else {
-            composed = raw;
-        }
+        // if (parsed && parsed.direct_answer) {
+        //     composed = [
+        //         `Direct Answer: ${parsed.direct_answer}`,
+        //         parsed.supporting_evidence?.length
+        //             ? `\nSupporting Evidence:\n- ${parsed.supporting_evidence.join("\n- ")}`
+        //             : "\nSupporting Evidence: (none)",
+        //         `\nContextual Analysis:\n${parsed.contextual_analysis || "(none)"}`,
+        //         parsed.sources?.length ? `\nSource Documentation:\n- ${parsed.sources.join("\n- ")}` : "",
+        //     ].join("\n");
+        // } else {
+        //     composed = raw;
+        // }
+        composed = raw;
 
-        // 7) safeguard trim
+        // 6) safeguard trim
         const start = composed.indexOf("Direct Answer:");
         const next = composed.indexOf("Direct Answer:", start + 14);
         const finalText =
             start !== -1 && next !== -1 ? composed.slice(start, next).trim() : composed.trim();
-        console.log("Final Answer with Citations:\n", `${finalText}\n\nSources: \n${citationsList}`);
 
-        const finalAnswer = `
-${finalText}
-<br><br>
-<strong>Sources:</strong><br>
-${citationsList}
-`;
+        console.log("Final Answer:\n", finalText);
 
-        return { text: finalAnswer, citations };
+        return { text: finalText, citations };
     },
 });
+
 
 // Agent
 export const ragAgentVectorFinal = new Agent({
